@@ -174,6 +174,21 @@ public class RedisClusterConnectOptions extends RedisConnectOptions {
     return (RedisClusterConnectOptions) super.setMaxWaitingHandlers(maxWaitingHandlers);
   }
 
+  @Override
+  public RedisClusterConnectOptions setClientIdentification(boolean clientIdentification) {
+    return (RedisClusterConnectOptions) super.setClientIdentification(clientIdentification);
+  }
+
+  @Override
+  public RedisClusterConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
+    return (RedisClusterConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  }
+
+  @Override
+  public RedisClusterConnectOptions addLibrarySuffix(String librarySuffix) {
+    return (RedisClusterConnectOptions) super.addLibrarySuffix(librarySuffix);
+  }
+
   /**
    * Converts this object to JSON notation.
    *

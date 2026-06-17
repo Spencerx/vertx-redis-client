@@ -52,6 +52,21 @@ public class RedisConnectOptionsConverter {
             obj.setMaxWaitingHandlers(((Number)member.getValue()).intValue());
           }
           break;
+        case "clientIdentification":
+          if (member.getValue() instanceof Boolean) {
+            obj.setClientIdentification((Boolean)member.getValue());
+          }
+          break;
+        case "librarySuffixes":
+          if (member.getValue() instanceof JsonArray) {
+            java.util.ArrayList<java.lang.String> list =  new java.util.ArrayList<>();
+            ((Iterable<Object>)member.getValue()).forEach( item -> {
+              if (item instanceof String)
+                list.add((String)item);
+            });
+            obj.setLibrarySuffixes(list);
+          }
+          break;
       }
     }
   }
@@ -78,5 +93,11 @@ public class RedisConnectOptionsConverter {
       json.put("endpoints", array);
     }
     json.put("maxWaitingHandlers", obj.getMaxWaitingHandlers());
+    json.put("clientIdentification", obj.isClientIdentification());
+    if (obj.getLibrarySuffixes() != null) {
+      JsonArray array = new JsonArray();
+      obj.getLibrarySuffixes().forEach(item -> array.add(item));
+      json.put("librarySuffixes", array);
+    }
   }
 }

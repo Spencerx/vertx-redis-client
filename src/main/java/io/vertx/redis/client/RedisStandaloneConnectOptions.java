@@ -87,6 +87,21 @@ public class RedisStandaloneConnectOptions extends RedisConnectOptions {
     return (RedisStandaloneConnectOptions) super.setMaxWaitingHandlers(maxWaitingHandlers);
   }
 
+  @Override
+  public RedisStandaloneConnectOptions setClientIdentification(boolean clientIdentification) {
+    return (RedisStandaloneConnectOptions) super.setClientIdentification(clientIdentification);
+  }
+
+  @Override
+  public RedisStandaloneConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
+    return (RedisStandaloneConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  }
+
+  @Override
+  public RedisStandaloneConnectOptions addLibrarySuffix(String librarySuffix) {
+    return (RedisStandaloneConnectOptions) super.addLibrarySuffix(librarySuffix);
+  }
+
   /**
    * Converts this object to JSON notation.
    *

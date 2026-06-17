@@ -19,6 +19,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
+import io.vertx.redis.client.impl.RedisClientVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +35,14 @@ public abstract class RedisConnectOptions {
   private boolean protocolNegotiation;
   private ProtocolVersion preferredProtocolVersion;
   private int maxWaitingHandlers;
+  private boolean clientIdentification;
+  private List<String> librarySuffixes;
 
   public RedisConnectOptions() {
     maxNestedArrays = 32;
     protocolNegotiation = true;
     maxWaitingHandlers = 2048;
+    clientIdentification = true;
   }
 
   public RedisConnectOptions(RedisOptions options) {
@@ -50,6 +54,8 @@ public abstract class RedisConnectOptions {
     setProtocolNegotiation(options.isProtocolNegotiation());
     setPreferredProtocolVersion(options.getPreferredProtocolVersion());
     setMaxWaitingHandlers(options.getMaxWaitingHandlers());
+    setClientIdentification(options.isClientIdentification());
+    setLibrarySuffixes(options.getLibrarySuffixes() == null ? null : new ArrayList<>(options.getLibrarySuffixes()));
   }
 
   public RedisConnectOptions(RedisConnectOptions other) {
@@ -61,6 +67,8 @@ public abstract class RedisConnectOptions {
     setProtocolNegotiation(other.isProtocolNegotiation());
     setPreferredProtocolVersion(other.getPreferredProtocolVersion());
     setMaxWaitingHandlers(other.getMaxWaitingHandlers());
+    setClientIdentification(other.isClientIdentification());
+    setLibrarySuffixes(other.getLibrarySuffixes() == null ? null : new ArrayList<>(other.getLibrarySuffixes()));
   }
 
   public RedisConnectOptions(JsonObject json) {
@@ -273,6 +281,83 @@ public abstract class RedisConnectOptions {
   public RedisConnectOptions setMaxWaitingHandlers(int maxWaitingHandlers) {
     this.maxWaitingHandlers = maxWaitingHandlers;
     return this;
+  }
+
+  /**
+   * Whether the client identifies itself to the server after the handshake using {@code CLIENT SETINFO}
+   * (Redis 7.2+), so that connections are attributable in {@code CLIENT INFO} / {@code CLIENT LIST}.
+   * Defaults to {@code true}.
+   *
+   * @return true when self-identification is enabled.
+   */
+  public boolean isClientIdentification() {
+    return clientIdentification;
+  }
+
+  /**
+   * Sets whether the client identifies itself to the server after the handshake using
+   * {@code CLIENT SETINFO} (Redis 7.2+). Disabling this skips the identification commands entirely.
+   *
+   * @param clientIdentification false to disable self-identification.
+   * @return fluent self.
+   */
+  public RedisConnectOptions setClientIdentification(boolean clientIdentification) {
+    this.clientIdentification = clientIdentification;
+    return this;
+  }
+
+  /**
+   * Gets the framework suffixes appended to the reported {@code lib-name}. These allow upstream
+   * libraries (for example Quarkus) to attribute themselves on top of the base
+   * {@code vertx-redis-client} name.
+   *
+   * @return the configured library suffixes, may be {@code null}.
+   */
+  public List<String> getLibrarySuffixes() {
+    return librarySuffixes;
+  }
+
+  /**
+   * Sets the framework suffixes appended to the reported {@code lib-name}. The composed name has the
+   * form {@code vertx-redis-client(suffix1;suffix2)}. Suffixes must not contain whitespace, {@code (},
+   * {@code )} or {@code ;}.
+   *
+   * @param librarySuffixes the library suffixes, may be {@code null} to report only the base name.
+   * @return fluent self.
+   * @throws IllegalArgumentException if any suffix contains an illegal character.
+   */
+  public RedisConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
+    if (librarySuffixes != null) {
+      for (String suffix : librarySuffixes) {
+        validateSuffix(suffix);
+      }
+    }
+    this.librarySuffixes = librarySuffixes;
+    return this;
+  }
+
+  /**
+   * Adds a single framework suffix appended to the reported {@code lib-name}.
+   *
+   * @param librarySuffix the library suffix, must not contain whitespace, {@code (}, {@code )} or {@code ;}.
+   * @return fluent self.
+   * @throws IllegalArgumentException if the suffix contains an illegal character.
+   */
+  @GenIgnore
+  public RedisConnectOptions addLibrarySuffix(String librarySuffix) {
+    validateSuffix(librarySuffix);
+    if (librarySuffixes == null) {
+      librarySuffixes = new ArrayList<>();
+    }
+    librarySuffixes.add(librarySuffix);
+    return this;
+  }
+
+  private static void validateSuffix(String suffix) {
+    if (suffix != null && !RedisClientVersion.isValidSuffix(suffix)) {
+      throw new IllegalArgumentException(
+        "Library suffix must not contain whitespace, '(', ')' or ';': " + suffix);
+    }
   }
 
   /**

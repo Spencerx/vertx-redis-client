@@ -226,6 +226,10 @@ public class RedisConnectionManager implements Function<RedisConnectionManager.C
       // initial handshake
       return hello(ctx, connection, redisURI, options)
         .compose(hello -> {
+          // self-identification (best effort, ignored by servers older than Redis 7.2)
+          return clientSetInfo(ctx, connection, options);
+        })
+        .compose(setInfo -> {
           // perform select
           return select(ctx, connection, redisURI.select());
         })
@@ -297,6 +301,30 @@ public class RedisConnectionManager implements Function<RedisConnectionManager.C
             return Future.failedFuture(err);
           });
       }
+    }
+
+    private Future<Void> clientSetInfo(ContextInternal ctx, RedisConnection connection, RedisConnectOptions options) {
+      if (!options.isClientIdentification()) {
+        return ctx.succeededFuture();
+      }
+
+      String libName = RedisClientVersion.formatLibraryName(options.getLibrarySuffixes());
+
+      // `CLIENT SETINFO` was added in Redis 7.2; older servers reject it, in which case the error
+      // is ignored so the connection stays usable
+      Request setLibName = Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-name").arg(libName);
+      Request setLibVer = Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-ver").arg(RedisClientVersion.VERSION);
+
+      // both commands are written before awaiting any reply so they are pipelined (single round-trip)
+      Future<Response> libNameSent = connection.send(setLibName);
+      Future<Response> libVerSent = connection.send(setLibVer);
+      return Future.all(libNameSent, libVerSent)
+        .transform(ar -> {
+          if (ar.failed()) {
+            LOG.debug("CLIENT SETINFO failed (server likely predates Redis 7.2), ignoring", ar.cause());
+          }
+          return ctx.succeededFuture();
+        });
     }
 
     private Future<Void> ping(ContextInternal ctx, RedisConnection connection, RedisConnectOptions options) {

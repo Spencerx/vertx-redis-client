@@ -565,6 +565,28 @@ This means that each connection to the server will use at least this amount of m
 As the client works in pipeline mode, keeping the number of connections low provides best results, which means `16 KB * nconn` memory will be used.
 If the application will require a large number of connections, then reducing the watermark value to a smaller value or even disable it entirely is advisable.
 
+== Client identification
+
+On servers that support it (Redis 7.2+), the client identifies itself after the handshake using `CLIENT SETINFO`, so that connections can be attributed in `CLIENT INFO` and `CLIENT LIST`.
+By default it reports `lib-name=vertx-redis-client` and `lib-ver` resolved from the client JAR.
+On older servers that do not support `CLIENT SETINFO`, identification is skipped silently and the connection remains fully usable.
+
+Upstream frameworks (for example Quarkus) can attribute themselves on top of the base name by adding one or more suffixes with {@link io.vertx.redis.client.RedisOptions#addLibrarySuffix}.
+The composed name has the form `vertx-redis-client(suffix1;suffix2)`.
+Suffixes must not contain whitespace, `(`, `)` or `;`; invalid or blank suffixes are ignored.
+
+[source,$lang]
+----
+{@link examples.RedisExamples#clientIdentification}
+----
+
+Self-identification can be turned off entirely with {@link io.vertx.redis.client.RedisOptions#setClientIdentification}:
+
+[source,$lang]
+----
+{@link examples.RedisExamples#clientIdentificationDisabled}
+----
+
 == Valkey
 
 This client also supports https://valkey.io/[Valkey].

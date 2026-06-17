@@ -316,4 +316,21 @@ public class RedisExamples {
   public void preferredProtocolVersion1(RedisOptions options) {
     options.setPreferredProtocolVersion(ProtocolVersion.RESP2);
   }
+
+  public void clientIdentification(Vertx vertx) {
+    Redis.createClient(
+        vertx,
+        new RedisOptions()
+          .setConnectionString("redis://localhost:6379")
+          // upstream frameworks can attribute themselves on top of the base name
+          .addLibrarySuffix("quarkus-redis_v3.x"))
+      .connect()
+      .onSuccess(conn -> {
+        // the server now reports lib-name=vertx-redis-client(quarkus-redis_v3.x)
+      });
+  }
+
+  public void clientIdentificationDisabled(RedisOptions options) {
+    options.setClientIdentification(false);
+  }
 }

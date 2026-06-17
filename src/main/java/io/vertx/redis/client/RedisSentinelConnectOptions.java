@@ -223,6 +223,21 @@ public class RedisSentinelConnectOptions extends RedisConnectOptions {
     return (RedisSentinelConnectOptions) super.setMaxWaitingHandlers(maxWaitingHandlers);
   }
 
+  @Override
+  public RedisSentinelConnectOptions setClientIdentification(boolean clientIdentification) {
+    return (RedisSentinelConnectOptions) super.setClientIdentification(clientIdentification);
+  }
+
+  @Override
+  public RedisSentinelConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
+    return (RedisSentinelConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  }
+
+  @Override
+  public RedisSentinelConnectOptions addLibrarySuffix(String librarySuffix) {
+    return (RedisSentinelConnectOptions) super.addLibrarySuffix(librarySuffix);
+  }
+
   /**
    * Converts this object to JSON notation.
    *
