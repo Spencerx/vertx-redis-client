@@ -54,8 +54,12 @@ public class RedisClientSelfIdentificationTest {
         String reply = info.toString();
         assertTrue(reply.contains("lib-name=" + RedisClientVersion.NAME),
           "CLIENT INFO should contain lib-name, was: " + reply);
-        assertTrue(reply.contains("lib-ver=" + RedisClientVersion.VERSION),
-          "CLIENT INFO should contain lib-ver, was: " + reply);
+        // lib-ver is only reported when the version could be resolved from the JAR manifest;
+        // when running from class files it is null and intentionally not sent
+        if (RedisClientVersion.VERSION != null) {
+          assertTrue(reply.contains("lib-ver=" + RedisClientVersion.VERSION),
+            "CLIENT INFO should contain lib-ver, was: " + reply);
+        }
         test.completeNow();
       }));
   }
@@ -65,7 +69,7 @@ public class RedisClientSelfIdentificationTest {
   public void testClientInfoReportsLibNameWithSuffix(VertxTestContext test) {
     client = Redis.createClient(context.vertx(), new RedisOptions()
       .setConnectionString(redis.getRedisUri())
-      .addLibrarySuffix("quarkus-redis_v3.x"));
+      .addClientIdSuffix("quarkus-redis_v3.x"));
     client.connect()
       .compose(conn -> conn.send(cmd(CLIENT).arg("INFO")))
       .onComplete(test.succeeding(info -> {
@@ -81,7 +85,7 @@ public class RedisClientSelfIdentificationTest {
   public void testClientInfoReportsNoLibNameWhenDisabled(VertxTestContext test) {
     client = Redis.createClient(context.vertx(), new RedisOptions()
       .setConnectionString(redis.getRedisUri())
-      .setClientIdentification(false));
+      .setClientId(false));
     client.connect()
       .compose(conn -> conn.send(cmd(CLIENT).arg("INFO")))
       .onComplete(test.succeeding(info -> {

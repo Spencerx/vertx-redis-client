@@ -88,18 +88,18 @@ public class RedisStandaloneConnectOptions extends RedisConnectOptions {
   }
 
   @Override
-  public RedisStandaloneConnectOptions setClientIdentification(boolean clientIdentification) {
-    return (RedisStandaloneConnectOptions) super.setClientIdentification(clientIdentification);
+  public RedisStandaloneConnectOptions setClientId(boolean clientId) {
+    return (RedisStandaloneConnectOptions) super.setClientId(clientId);
   }
 
   @Override
-  public RedisStandaloneConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
-    return (RedisStandaloneConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  public RedisStandaloneConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    return (RedisStandaloneConnectOptions) super.setClientIdSuffixes(clientIdSuffixes);
   }
 
   @Override
-  public RedisStandaloneConnectOptions addLibrarySuffix(String librarySuffix) {
-    return (RedisStandaloneConnectOptions) super.addLibrarySuffix(librarySuffix);
+  public RedisStandaloneConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    return (RedisStandaloneConnectOptions) super.addClientIdSuffix(clientIdSuffix);
   }
 
   /**

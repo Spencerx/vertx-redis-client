@@ -175,18 +175,18 @@ public class RedisClusterConnectOptions extends RedisConnectOptions {
   }
 
   @Override
-  public RedisClusterConnectOptions setClientIdentification(boolean clientIdentification) {
-    return (RedisClusterConnectOptions) super.setClientIdentification(clientIdentification);
+  public RedisClusterConnectOptions setClientId(boolean clientId) {
+    return (RedisClusterConnectOptions) super.setClientId(clientId);
   }
 
   @Override
-  public RedisClusterConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
-    return (RedisClusterConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  public RedisClusterConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    return (RedisClusterConnectOptions) super.setClientIdSuffixes(clientIdSuffixes);
   }
 
   @Override
-  public RedisClusterConnectOptions addLibrarySuffix(String librarySuffix) {
-    return (RedisClusterConnectOptions) super.addLibrarySuffix(librarySuffix);
+  public RedisClusterConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    return (RedisClusterConnectOptions) super.addClientIdSuffix(clientIdSuffix);
   }
 
   /**

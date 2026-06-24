@@ -59,8 +59,8 @@ public class RedisOptions {
   private long topologyCacheTTL;
   private TracingPolicy tracingPolicy;
   private boolean autoFailover;
-  private boolean clientIdentification;
-  private List<String> librarySuffixes;
+  private boolean clientId;
+  private List<String> clientIdSuffixes;
 
   /**
    * Creates a default configuration object using Redis server defaults
@@ -81,7 +81,7 @@ public class RedisOptions {
     clusterTransactions = RedisClusterTransactions.DISABLED;
     protocolNegotiation = true;
     topologyCacheTTL = 1000;
-    clientIdentification = true;
+    clientId = true;
   }
 
   /**
@@ -109,8 +109,8 @@ public class RedisOptions {
     this.topologyCacheTTL = other.topologyCacheTTL;
     this.tracingPolicy = other.tracingPolicy;
     this.autoFailover = other.autoFailover;
-    this.clientIdentification = other.clientIdentification;
-    this.librarySuffixes = other.librarySuffixes == null ? null : new ArrayList<>(other.librarySuffixes);
+    this.clientId = other.clientId;
+    this.clientIdSuffixes = other.clientIdSuffixes == null ? null : new ArrayList<>(other.clientIdSuffixes);
   }
 
   /**
@@ -856,58 +856,57 @@ public class RedisOptions {
    *
    * @return true when self-identification is enabled.
    */
-  public boolean isClientIdentification() {
-    return clientIdentification;
+  public boolean isClientId() {
+    return clientId;
   }
 
   /**
    * Sets whether the client identifies itself to the server after the handshake using
    * {@code CLIENT SETINFO} (Redis 7.2+). Disabling this skips the identification commands entirely.
    *
-   * @param clientIdentification false to disable self-identification.
+   * @param clientId false to disable self-identification.
    * @return fluent self.
    */
-  public RedisOptions setClientIdentification(boolean clientIdentification) {
-    this.clientIdentification = clientIdentification;
+  public RedisOptions setClientId(boolean clientId) {
+    this.clientId = clientId;
     return this;
   }
 
   /**
    * Gets the framework suffixes appended to the reported {@code lib-name}. These allow upstream
-   * libraries (for example Quarkus) to attribute themselves on top of the base
-   * {@code vertx-redis-client} name.
+   * libraries to attribute themselves on top of the base {@code vertx-redis-client} name.
    *
    * @return the configured library suffixes, may be {@code null}.
    */
-  public List<String> getLibrarySuffixes() {
-    return librarySuffixes;
+  public List<String> getClientIdSuffixes() {
+    return clientIdSuffixes;
   }
 
   /**
    * Sets the framework suffixes appended to the reported {@code lib-name}. The composed name has the
-   * form {@code vertx-redis-client(suffix1;suffix2)}. Suffixes must not contain whitespace, {@code (},
-   * {@code )} or {@code ;}.
+   * form {@code vertx-redis-client(suffix1;suffix2)}. Suffixes must consist of printable ASCII
+   * characters and must not contain {@code (}, {@code )} or {@code ;}.
    *
-   * @param librarySuffixes the library suffixes, may be {@code null} to report only the base name.
+   * @param clientIdSuffixes the library suffixes, may be {@code null} to report only the base name.
    * @return fluent self.
    */
-  public RedisOptions setLibrarySuffixes(List<String> librarySuffixes) {
-    this.librarySuffixes = librarySuffixes;
+  public RedisOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    this.clientIdSuffixes = clientIdSuffixes;
     return this;
   }
 
   /**
    * Adds a single framework suffix appended to the reported {@code lib-name}.
    *
-   * @param librarySuffix the library suffix, must not contain whitespace, {@code (}, {@code )} or {@code ;}.
+   * @param clientIdSuffix the library suffix, must consist of printable ASCII characters and must not contain {@code (}, {@code )} or {@code ;}.
    * @return fluent self.
    */
   @GenIgnore
-  public RedisOptions addLibrarySuffix(String librarySuffix) {
-    if (librarySuffixes == null) {
-      librarySuffixes = new ArrayList<>();
+  public RedisOptions addClientIdSuffix(String clientIdSuffix) {
+    if (clientIdSuffixes == null) {
+      clientIdSuffixes = new ArrayList<>();
     }
-    librarySuffixes.add(librarySuffix);
+    clientIdSuffixes.add(clientIdSuffix);
     return this;
   }
 

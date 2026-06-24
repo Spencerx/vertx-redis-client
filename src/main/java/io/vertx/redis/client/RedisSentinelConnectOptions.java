@@ -224,18 +224,18 @@ public class RedisSentinelConnectOptions extends RedisConnectOptions {
   }
 
   @Override
-  public RedisSentinelConnectOptions setClientIdentification(boolean clientIdentification) {
-    return (RedisSentinelConnectOptions) super.setClientIdentification(clientIdentification);
+  public RedisSentinelConnectOptions setClientId(boolean clientId) {
+    return (RedisSentinelConnectOptions) super.setClientId(clientId);
   }
 
   @Override
-  public RedisSentinelConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
-    return (RedisSentinelConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  public RedisSentinelConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    return (RedisSentinelConnectOptions) super.setClientIdSuffixes(clientIdSuffixes);
   }
 
   @Override
-  public RedisSentinelConnectOptions addLibrarySuffix(String librarySuffix) {
-    return (RedisSentinelConnectOptions) super.addLibrarySuffix(librarySuffix);
+  public RedisSentinelConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    return (RedisSentinelConnectOptions) super.addClientIdSuffix(clientIdSuffix);
   }
 
   /**

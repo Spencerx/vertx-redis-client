@@ -139,18 +139,18 @@ public class RedisReplicationConnectOptions extends RedisConnectOptions {
   }
 
   @Override
-  public RedisReplicationConnectOptions setClientIdentification(boolean clientIdentification) {
-    return (RedisReplicationConnectOptions) super.setClientIdentification(clientIdentification);
+  public RedisReplicationConnectOptions setClientId(boolean clientId) {
+    return (RedisReplicationConnectOptions) super.setClientId(clientId);
   }
 
   @Override
-  public RedisReplicationConnectOptions setLibrarySuffixes(List<String> librarySuffixes) {
-    return (RedisReplicationConnectOptions) super.setLibrarySuffixes(librarySuffixes);
+  public RedisReplicationConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    return (RedisReplicationConnectOptions) super.setClientIdSuffixes(clientIdSuffixes);
   }
 
   @Override
-  public RedisReplicationConnectOptions addLibrarySuffix(String librarySuffix) {
-    return (RedisReplicationConnectOptions) super.addLibrarySuffix(librarySuffix);
+  public RedisReplicationConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    return (RedisReplicationConnectOptions) super.addClientIdSuffix(clientIdSuffix);
   }
 
   /**

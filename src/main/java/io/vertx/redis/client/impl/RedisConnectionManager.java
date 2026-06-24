@@ -304,27 +304,34 @@ public class RedisConnectionManager implements Function<RedisConnectionManager.C
     }
 
     private Future<Void> clientSetInfo(ContextInternal ctx, RedisConnection connection, RedisConnectOptions options) {
-      if (!options.isClientIdentification()) {
+      if (!options.isClientId()) {
         return ctx.succeededFuture();
       }
 
-      String libName = RedisClientVersion.formatLibraryName(options.getLibrarySuffixes());
+      String libName = RedisClientVersion.formatLibraryName(options.getClientIdSuffixes());
 
       // `CLIENT SETINFO` was added in Redis 7.2; older servers reject it, in which case the error
-      // is ignored so the connection stays usable
-      Request setLibName = Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-name").arg(libName);
-      Request setLibVer = Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-ver").arg(RedisClientVersion.VERSION);
+      // is ignored so the connection stays usable. When both commands are sent they are written
+      // before awaiting any reply so they are pipelined (single round-trip).
+      Future<Response> libNameSent = connection.send(
+        Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-name").arg(libName));
 
-      // both commands are written before awaiting any reply so they are pipelined (single round-trip)
-      Future<Response> libNameSent = connection.send(setLibName);
-      Future<Response> libVerSent = connection.send(setLibVer);
-      return Future.all(libNameSent, libVerSent)
-        .transform(ar -> {
-          if (ar.failed()) {
-            LOG.debug("CLIENT SETINFO failed (server likely predates Redis 7.2), ignoring", ar.cause());
-          }
-          return ctx.succeededFuture();
-        });
+      Future<?> sent;
+      if (RedisClientVersion.VERSION != null) {
+        Future<Response> libVerSent = connection.send(
+          Request.cmd(Command.CLIENT).arg("SETINFO").arg("lib-ver").arg(RedisClientVersion.VERSION));
+        sent = Future.all(libNameSent, libVerSent);
+      } else {
+        // lib-ver is omitted when the version cannot be resolved from the JAR manifest
+        sent = libNameSent;
+      }
+
+      return sent.transform(ar -> {
+        if (ar.failed()) {
+          LOG.debug("CLIENT SETINFO failed (server likely predates Redis 7.2), ignoring", ar.cause());
+        }
+        return ctx.succeededFuture();
+      });
     }
 
     private Future<Void> ping(ContextInternal ctx, RedisConnection connection, RedisConnectOptions options) {

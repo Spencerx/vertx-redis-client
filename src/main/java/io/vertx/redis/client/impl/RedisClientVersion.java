@@ -30,8 +30,9 @@ public final class RedisClientVersion {
 
   /**
    * The library version reported to the server as {@code lib-ver}. Resolved from the JAR manifest
-   * at runtime, falling back to {@code "unknown"} when the implementation version is not available
-   * (for example, when running from class files rather than a packaged JAR).
+   * at runtime, or {@code null} when the implementation version is not available (for example, when
+   * running from class files rather than a packaged JAR), in which case {@code lib-ver} is not
+   * reported to the server.
    */
   public static final String VERSION = resolveVersion();
 
@@ -39,18 +40,17 @@ public final class RedisClientVersion {
   }
 
   private static String resolveVersion() {
-    String version = RedisClientVersion.class.getPackage().getImplementationVersion();
-    return version != null ? version : "unknown";
+    return RedisClientVersion.class.getPackage().getImplementationVersion();
   }
 
   /**
    * Composes the {@code lib-name} reported to the server from the base library name and the optional
-   * framework suffixes provided by upstream libraries (for example Quarkus).
+   * framework suffixes provided by upstream libraries.
    * <p>
    * With no suffixes the result is just {@link #NAME}. When suffixes are present they are joined with
-   * {@code ;} and wrapped in parentheses, for example {@code vertx-redis-client(quarkus-redis_v3.x)}.
-   * Blank suffixes and suffixes containing characters rejected by {@code CLIENT SETINFO}
-   * (whitespace, {@code (}, {@code )} or {@code ;}) are ignored.
+   * {@code ;} and wrapped in parentheses, for example {@code vertx-redis-client(my-framework_v1.0)}.
+   * Blank suffixes and suffixes containing characters rejected by {@code CLIENT SETINFO} (anything
+   * other than printable ASCII, or {@code (}, {@code )} or {@code ;}) are ignored.
    * <p>
    * Each suffix is treated as an opaque string; callers are expected to follow the {@code name_vversion}
    * convention recommended by the Redis {@code CLIENT SETINFO} documentation, but the convention is
@@ -80,8 +80,10 @@ public final class RedisClientVersion {
   }
 
   /**
-   * A suffix is valid when it contains no characters that {@code CLIENT SETINFO} rejects or that would
-   * break the composed {@code lib-name} grammar: whitespace, {@code (}, {@code )} and {@code ;}.
+   * A suffix is valid when it consists solely of printable ASCII characters (code points {@code 33} to
+   * {@code 126}) and contains none of {@code (}, {@code )} or {@code ;}, which would break the composed
+   * {@code lib-name} grammar or be rejected by {@code CLIENT SETINFO}. Restricting to ASCII also avoids
+   * the ambiguity of characters outside the Basic Multilingual Plane.
    *
    * @param suffix the suffix to validate
    * @return {@code true} if the suffix is safe to include in the {@code lib-name}
@@ -92,7 +94,7 @@ public final class RedisClientVersion {
     }
     for (int i = 0; i < suffix.length(); i++) {
       char c = suffix.charAt(i);
-      if (Character.isWhitespace(c) || c == '(' || c == ')' || c == ';') {
+      if (c <= 32 || c >= 127 || c == '(' || c == ')' || c == ';') {
         return false;
       }
     }
