@@ -67,7 +67,7 @@ public class RedisClientVersionTest {
   public void testIsValidSuffixRejectsNonAscii() {
     // control characters and DEL
     assertFalse(RedisClientVersion.isValidSuffix("has\ttab"));
-    assertFalse(RedisClientVersion.isValidSuffix("hasdel"));
+    assertFalse(RedisClientVersion.isValidSuffix("has\u007Fdel"));
     // non-ASCII BMP characters
     assertFalse(RedisClientVersion.isValidSuffix("café"));
     // characters outside the Basic Multilingual Plane (encoded as a surrogate pair)
