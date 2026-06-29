@@ -27,6 +27,8 @@ import io.vertx.redis.client.impl.RedisURI;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.vertx.redis.client.RedisConnectOptions.validateSuffix;
+
 /**
  * Redis Client Configuration options.
  *
@@ -59,6 +61,8 @@ public class RedisOptions {
   private long topologyCacheTTL;
   private TracingPolicy tracingPolicy;
   private boolean autoFailover;
+  private boolean clientId;
+  private List<String> clientIdSuffixes;
 
   /**
    * Creates a default configuration object using Redis server defaults
@@ -79,6 +83,7 @@ public class RedisOptions {
     clusterTransactions = RedisClusterTransactions.DISABLED;
     protocolNegotiation = true;
     topologyCacheTTL = 1000;
+    clientId = true;
   }
 
   /**
@@ -106,6 +111,8 @@ public class RedisOptions {
     this.topologyCacheTTL = other.topologyCacheTTL;
     this.tracingPolicy = other.tracingPolicy;
     this.autoFailover = other.autoFailover;
+    this.clientId = other.clientId;
+    this.clientIdSuffixes = other.clientIdSuffixes == null ? null : new ArrayList<>(other.clientIdSuffixes);
   }
 
   /**
@@ -841,6 +848,73 @@ public class RedisOptions {
    */
   public RedisOptions setAutoFailover(boolean autoFailover) {
     this.autoFailover = autoFailover;
+    return this;
+  }
+
+  /**
+   * Whether the client identifies itself to the server after the handshake using {@code CLIENT SETINFO}
+   * (Redis 7.2+), so that connections are attributable in {@code CLIENT INFO} / {@code CLIENT LIST}.
+   * Defaults to {@code true}.
+   *
+   * @return true when self-identification is enabled.
+   */
+  public boolean isClientId() {
+    return clientId;
+  }
+
+  /**
+   * Sets whether the client identifies itself to the server after the handshake using
+   * {@code CLIENT SETINFO} (Redis 7.2+). Disabling this skips the identification commands entirely.
+   *
+   * @param clientId false to disable self-identification.
+   * @return fluent self.
+   */
+  public RedisOptions setClientId(boolean clientId) {
+    this.clientId = clientId;
+    return this;
+  }
+
+  /**
+   * Gets the framework suffixes appended to the reported {@code lib-name}. These allow upstream
+   * libraries to attribute themselves on top of the base {@code vertx-redis-client} name.
+   *
+   * @return the configured library suffixes, may be {@code null}.
+   */
+  public List<String> getClientIdSuffixes() {
+    return clientIdSuffixes;
+  }
+
+  /**
+   * Sets the framework suffixes appended to the reported {@code lib-name}. The composed name has the
+   * form {@code vertx-redis-client(suffix1;suffix2)}. Suffixes must consist of printable ASCII
+   * characters and must not contain {@code (}, {@code )} or {@code ;}.
+   *
+   * @param clientIdSuffixes the library suffixes, may be {@code null} to report only the base name.
+   * @return fluent self.
+   */
+  public RedisOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    if (clientIdSuffixes != null) {
+      for (String suffix : clientIdSuffixes) {
+        validateSuffix(suffix);
+      }
+    }
+    this.clientIdSuffixes = clientIdSuffixes;
+    return this;
+  }
+
+  /**
+   * Adds a single framework suffix appended to the reported {@code lib-name}.
+   *
+   * @param clientIdSuffix the library suffix, must consist of printable ASCII characters and must not contain {@code (}, {@code )} or {@code ;}.
+   * @return fluent self.
+   */
+  @GenIgnore
+  public RedisOptions addClientIdSuffix(String clientIdSuffix) {
+    validateSuffix(clientIdSuffix);
+    if (clientIdSuffixes == null) {
+      clientIdSuffixes = new ArrayList<>();
+    }
+    clientIdSuffixes.add(clientIdSuffix);
     return this;
   }
 

@@ -138,6 +138,21 @@ public class RedisReplicationConnectOptions extends RedisConnectOptions {
     return (RedisReplicationConnectOptions) super.setMaxWaitingHandlers(maxWaitingHandlers);
   }
 
+  @Override
+  public RedisReplicationConnectOptions setClientId(boolean clientId) {
+    return (RedisReplicationConnectOptions) super.setClientId(clientId);
+  }
+
+  @Override
+  public RedisReplicationConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    return (RedisReplicationConnectOptions) super.setClientIdSuffixes(clientIdSuffixes);
+  }
+
+  @Override
+  public RedisReplicationConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    return (RedisReplicationConnectOptions) super.addClientIdSuffix(clientIdSuffix);
+  }
+
   /**
    * Converts this object to JSON notation.
    *

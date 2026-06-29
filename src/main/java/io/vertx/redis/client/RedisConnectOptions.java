@@ -19,6 +19,7 @@ import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
+import io.vertx.redis.client.impl.RedisClientVersion;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,11 +35,14 @@ public abstract class RedisConnectOptions {
   private boolean protocolNegotiation;
   private ProtocolVersion preferredProtocolVersion;
   private int maxWaitingHandlers;
+  private boolean clientId;
+  private List<String> clientIdSuffixes;
 
   public RedisConnectOptions() {
     maxNestedArrays = 32;
     protocolNegotiation = true;
     maxWaitingHandlers = 2048;
+    clientId = true;
   }
 
   public RedisConnectOptions(RedisOptions options) {
@@ -50,6 +54,8 @@ public abstract class RedisConnectOptions {
     setProtocolNegotiation(options.isProtocolNegotiation());
     setPreferredProtocolVersion(options.getPreferredProtocolVersion());
     setMaxWaitingHandlers(options.getMaxWaitingHandlers());
+    setClientId(options.isClientId());
+    setClientIdSuffixes(options.getClientIdSuffixes() == null ? null : new ArrayList<>(options.getClientIdSuffixes()));
   }
 
   public RedisConnectOptions(RedisConnectOptions other) {
@@ -61,6 +67,8 @@ public abstract class RedisConnectOptions {
     setProtocolNegotiation(other.isProtocolNegotiation());
     setPreferredProtocolVersion(other.getPreferredProtocolVersion());
     setMaxWaitingHandlers(other.getMaxWaitingHandlers());
+    setClientId(other.isClientId());
+    setClientIdSuffixes(other.getClientIdSuffixes() == null ? null : new ArrayList<>(other.getClientIdSuffixes()));
   }
 
   public RedisConnectOptions(JsonObject json) {
@@ -273,6 +281,82 @@ public abstract class RedisConnectOptions {
   public RedisConnectOptions setMaxWaitingHandlers(int maxWaitingHandlers) {
     this.maxWaitingHandlers = maxWaitingHandlers;
     return this;
+  }
+
+  /**
+   * Whether the client identifies itself to the server after the handshake using {@code CLIENT SETINFO}
+   * (Redis 7.2+), so that connections are attributable in {@code CLIENT INFO} / {@code CLIENT LIST}.
+   * Defaults to {@code true}.
+   *
+   * @return true when self-identification is enabled.
+   */
+  public boolean isClientId() {
+    return clientId;
+  }
+
+  /**
+   * Sets whether the client identifies itself to the server after the handshake using
+   * {@code CLIENT SETINFO} (Redis 7.2+). Disabling this skips the identification commands entirely.
+   *
+   * @param clientId false to disable self-identification.
+   * @return fluent self.
+   */
+  public RedisConnectOptions setClientId(boolean clientId) {
+    this.clientId = clientId;
+    return this;
+  }
+
+  /**
+   * Gets the framework suffixes appended to the reported {@code lib-name}. These allow upstream
+   * libraries to attribute themselves on top of the base {@code vertx-redis-client} name.
+   *
+   * @return the configured library suffixes, may be {@code null}.
+   */
+  public List<String> getClientIdSuffixes() {
+    return clientIdSuffixes;
+  }
+
+  /**
+   * Sets the framework suffixes appended to the reported {@code lib-name}. The composed name has the
+   * form {@code vertx-redis-client(suffix1;suffix2)}. Suffixes must consist of printable ASCII
+   * characters and must not contain {@code (}, {@code )} or {@code ;}.
+   *
+   * @param clientIdSuffixes the library suffixes, may be {@code null} to report only the base name.
+   * @return fluent self.
+   * @throws IllegalArgumentException if any suffix contains an illegal character.
+   */
+  public RedisConnectOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    if (clientIdSuffixes != null) {
+      for (String suffix : clientIdSuffixes) {
+        validateSuffix(suffix);
+      }
+    }
+    this.clientIdSuffixes = clientIdSuffixes;
+    return this;
+  }
+
+  /**
+   * Adds a single framework suffix appended to the reported {@code lib-name}.
+   *
+   * @param clientIdSuffix the library suffix, must consist of printable ASCII characters and must not contain {@code (}, {@code )} or {@code ;}.
+   * @return fluent self.
+   * @throws IllegalArgumentException if the suffix contains an illegal character.
+   */
+  @GenIgnore
+  public RedisConnectOptions addClientIdSuffix(String clientIdSuffix) {
+    validateSuffix(clientIdSuffix);
+    if (clientIdSuffixes == null) {
+      clientIdSuffixes = new ArrayList<>();
+    }
+    clientIdSuffixes.add(clientIdSuffix);
+    return this;
+  }
+
+  static void validateSuffix(String suffix) {
+    if (suffix != null && !RedisClientVersion.isValidSuffix(suffix)) {
+      throw new IllegalArgumentException(
+        "Library suffix must consist of printable ASCII characters and must not contain '(', ')' or ';': " + suffix);
+    }
   }
 
   /**

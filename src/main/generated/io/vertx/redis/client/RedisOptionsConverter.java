@@ -137,6 +137,21 @@ public class RedisOptionsConverter {
             obj.setAutoFailover((Boolean)member.getValue());
           }
           break;
+        case "clientId":
+          if (member.getValue() instanceof Boolean) {
+            obj.setClientId((Boolean)member.getValue());
+          }
+          break;
+        case "clientIdSuffixes":
+          if (member.getValue() instanceof JsonArray) {
+            java.util.ArrayList<java.lang.String> list =  new java.util.ArrayList<>();
+            ((Iterable<Object>)member.getValue()).forEach( item -> {
+              if (item instanceof String)
+                list.add((String)item);
+            });
+            obj.setClientIdSuffixes(list);
+          }
+          break;
       }
     }
   }
@@ -200,5 +215,11 @@ public class RedisOptionsConverter {
     }
     json.put("topologyCacheTTL", obj.getTopologyCacheTTL());
     json.put("autoFailover", obj.isAutoFailover());
+    json.put("clientId", obj.isClientId());
+    if (obj.getClientIdSuffixes() != null) {
+      JsonArray array = new JsonArray();
+      obj.getClientIdSuffixes().forEach(item -> array.add(item));
+      json.put("clientIdSuffixes", array);
+    }
   }
 }
