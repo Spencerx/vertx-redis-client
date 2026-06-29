@@ -27,6 +27,8 @@ import io.vertx.redis.client.impl.RedisURI;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.vertx.redis.client.RedisConnectOptions.validateSuffix;
+
 /**
  * Redis Client Configuration options.
  *
@@ -891,6 +893,11 @@ public class RedisOptions {
    * @return fluent self.
    */
   public RedisOptions setClientIdSuffixes(List<String> clientIdSuffixes) {
+    if (clientIdSuffixes != null) {
+      for (String suffix : clientIdSuffixes) {
+        validateSuffix(suffix);
+      }
+    }
     this.clientIdSuffixes = clientIdSuffixes;
     return this;
   }
@@ -903,6 +910,7 @@ public class RedisOptions {
    */
   @GenIgnore
   public RedisOptions addClientIdSuffix(String clientIdSuffix) {
+    validateSuffix(clientIdSuffix);
     if (clientIdSuffixes == null) {
       clientIdSuffixes = new ArrayList<>();
     }

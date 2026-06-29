@@ -352,7 +352,7 @@ public abstract class RedisConnectOptions {
     return this;
   }
 
-  private static void validateSuffix(String suffix) {
+  static void validateSuffix(String suffix) {
     if (suffix != null && !RedisClientVersion.isValidSuffix(suffix)) {
       throw new IllegalArgumentException(
         "Library suffix must consist of printable ASCII characters and must not contain '(', ')' or ';': " + suffix);
